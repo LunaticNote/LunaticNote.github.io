@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2020-05-10T16:03:11.083Z</updated>
+  <updated>2020-05-10T16:09:57.744Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -21,7 +21,7 @@
     <link href="http://yoursite.com/2020/05/10/%E6%82%B2%E8%A7%82%E9%94%81%E5%92%8C%E4%B9%90%E8%A7%82%E9%94%81/"/>
     <id>http://yoursite.com/2020/05/10/%E6%82%B2%E8%A7%82%E9%94%81%E5%92%8C%E4%B9%90%E8%A7%82%E9%94%81/</id>
     <published>2020-05-10T14:56:00.000Z</published>
-    <updated>2020-05-10T16:03:11.083Z</updated>
+    <updated>2020-05-10T16:09:57.744Z</updated>
     
     <content type="html"><![CDATA[<h2 id="悲观锁和乐观锁"><a href="#悲观锁和乐观锁" class="headerlink" title="悲观锁和乐观锁"></a>悲观锁和乐观锁</h2><h3 id="并发："><a href="#并发：" class="headerlink" title="并发："></a>并发：</h3><blockquote><p>&ensp; &ensp; &ensp; &ensp; 首先你要理解并发和多线程不是一个概念，多线程指的是单个程序中同时运行多个线程完成不同的工作，称为多线程，并发指的是一个时间段中有几个程序都处于已启动运行到运行完毕之间，且这几个程序都是在同一个处理机上运行，但任意一个时刻点上只有一个程序在处理机上运行，此外还有一个并行，他指的是两个或者多个事件在同一时刻发生 ，并发强调的时间段，更准确的来说并发是不断的互相抢占；</p></blockquote><h3 id="悲观锁（-Pessimistic-Concurrency-Control-PCC）"><a href="#悲观锁（-Pessimistic-Concurrency-Control-PCC）" class="headerlink" title="悲观锁（ Pessimistic Concurrency Control  PCC）"></a>悲观锁（ Pessimistic Concurrency Control  PCC）</h3><blockquote><p> &ensp; &ensp; &ensp; 嗯你可以认为他有被害妄想症，每次去拿数据的时候都认为别人会修改，所以每次在拿数据的时候都会上锁 ,悲观的并发控制实际上是先锁在访问的保守策略，因而它的效率有些不尽人意，这种加锁会产生额外的开销，同时降低了并行性，Java中synchronized（内置）和ReentrantLock（重入锁）等独占锁就是悲观锁思想的实现， AQS框架下的锁则是先尝试CAS乐观锁去获取锁，获取不到，才会转换为悲观锁 ；</p><p>synchronized和Lock的异同]<a href="https://www.cnblogs.com/gejuncheng/p/10777691.html" target="_blank" rel="noopener">https://www.cnblogs.com/gejuncheng/p/10777691.html</a> </p></blockquote><h3 id="乐观锁（Optimistic-Lock-）"><a href="#乐观锁（Optimistic-Lock-）" class="headerlink" title="乐观锁（Optimistic Lock  ）"></a>乐观锁（Optimistic Lock  ）</h3><blockquote><p> &ensp; &ensp; &ensp; 即认为读多写少，遇到并发写的可能性低，每次去拿数据的时候都认为别人不会修改，所以不会上锁，但是在更新的时候会判断一下在此期间别人有没有去更新这个数据，采取在写时先读出当前版本号，然后加锁操作（比较跟拿数据时的版本号，如果一样则更新，版本号+1），乐观锁基本都是通过CAS操作实现的这在之前的java8（1）中有介绍，JDK1.5 中新增java.util.concurrent(J.U.C)就是建立在CAS之上。相比较于synchronized这种阻塞算法，CAS是非阻塞算法的一种常见实现。所以J.U.C在性能上有了很大的提升但是这种锁也有问题。</p><p>ABA:</p><p>如果一开始位置V得到的旧值是A，赋值时再次读取仍然是A，并不能说明变量没有被其它线程改变过。有可能是其它线程将变量改为了B，后来又改回了A，大部分情况下不会影响并发的正确性，如果要解决这种问题，用传统的互斥同步可能比原子类更高效；</p><p>自旋时间长开销大：</p><p>自旋CAS（也就是不成功就一直循环直到成功）但是长时间不成功会给CPU带来非常大的执行开销，如果JVM支持处理器提供的pause指令那么效率会有一定的提升，pause指令有两个作用，第一它可以延迟流水线执行指令，使CPU不会消耗过多的执行资源，延迟的时间取决于具体实现的版本，在一些处理器上延迟时间是0.第二他可以避免在退出循环时因内存顺序冲突引起CPU流水线被清空，从而提高CPU执行效率;</p><p>只保证单个共享变量：</p><p> CAS只对单个共享变量有效，当操作涉及跨多个共享变量时CAS无效，但是从JDK1.5开始，提供了AtomicReference类来保证引用对象之间的原子性，你可以把多个变量放在一个对象里来进行CAS操作。所以我们可以使用锁或者利用AtomicReference类把多个共享变量合并成一个共享变量来操作 ：</p></blockquote><h3 id="Mysql（分布式）"><a href="#Mysql（分布式）" class="headerlink" title="Mysql（分布式）"></a>Mysql（分布式）</h3><blockquote><p>悲观锁主要是共享锁和排他锁， 适合写操作多的场景 ；<br>乐观锁适合读操作多的场景，不加锁的特点能够使其读操作的性能大幅提升。 </p><p>表级锁（ MyISAM 支持）：开销小，加锁快，不会出现死锁，锁定粒度大，发生锁冲突的概率最高，并发度最低。<br>行级锁（ InnoDB  支持）：开销大，加锁慢，会出现死锁，锁定粒度最小，发生锁冲突的概率最低，并发度也最高。<br>页面锁：开销和加锁时间界于表锁和行锁之间，会出现死锁，锁定粒度界于表锁和行锁之间，并发度一般</p><p> <strong>行级锁：</strong> </p><p> &ensp; &ensp; &ensp; 共享锁(s)：又称为读锁，简称S锁。顾名思义，共享锁就是多个事务对于同一数据可以共享一把锁，都能访问到数据，但是只能读不能修改</p><p> &ensp; &ensp; &ensp; 排他锁(x)：又称为写锁，简称X锁。顾名思义，排他锁就是不能与其他锁并存，如果一个事务获取了一个数据行的排他锁，其他事务就不能再获取该行的其他锁，包括共享锁和排他锁，但是获取排他锁的事务是可以对数据行读取和修改</p><p>数据库的事务隔离越严格，并发副作用越小，但付出的代价也就越大，“串行化”与“并发”是矛盾的</p></blockquote><h3 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h3><blockquote><p>  &ensp; &ensp; &ensp; 对于资源竞争较少（线程冲突较轻）的情况，使用synchronized同步锁进行线程阻塞和唤醒切换以及用户内核态间的切换操作额外浪费消耗cpu资源；而CAS基于硬件实现，不需要进入内核，不需要切换线程，操作自旋几率较少，因此可以获得更高的性能 </p><p>  &ensp; &ensp; &ensp; 对于资源竞争严重（线程冲突严重）的情况，CAS自旋的概率会比较大，从而浪费更多的CPU资源，效率低于synchronized </p><p> &ensp; &ensp; &ensp; synchronized 在JDK1.6之后进行了主要包括为了减少获得锁和释放锁带来的性能消耗而引入了偏向锁和轻量级锁以及其他各种优化之后变得在某些情况下并不是那么重了,底层实现主要依靠lock-Free队列，基本思路是自旋后阻塞，竞争切换后继续竞争锁，稍微牺牲了公平性，但获得了高吞吐量。在线程冲突较少的情况下，可以获得和CAS类似的性能,而线程冲突严重的情况下性能远高于CAS</p></blockquote>]]></content>
     
@@ -37,10 +37,10 @@
     
       <category term="并发" scheme="http://yoursite.com/categories/%E5%B9%B6%E5%8F%91/"/>
     
-      <category term="锁" scheme="http://yoursite.com/categories/%E5%B9%B6%E5%8F%91/%E9%94%81/"/>
-    
     
       <category term="java" scheme="http://yoursite.com/tags/java/"/>
+    
+      <category term="锁" scheme="http://yoursite.com/tags/%E9%94%81/"/>
     
   </entry>
   
@@ -93,36 +93,6 @@
     
     
       <category term="java" scheme="http://yoursite.com/tags/java/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Hello World</title>
-    <link href="http://yoursite.com/2020/04/28/HelloWord/"/>
-    <id>http://yoursite.com/2020/04/28/HelloWord/</id>
-    <published>2020-04-28T01:28:25.769Z</published>
-    <updated>2020-04-29T00:27:06.932Z</updated>
-    
-    <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p><h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/one-command-deployment.html" target="_blank" rel="noopener">Deployment</a></p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;p&gt;Welcome to &lt;a href=&quot;https://hexo.io/&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Hexo&lt;/a&gt;! This is your very first post. Check &lt;a href=&quot;https://hexo.
-      
-    
-    </summary>
-    
-    
-      <category term="Hexo" scheme="http://yoursite.com/categories/Hexo/"/>
-    
-    
-      <category term="java" scheme="http://yoursite.com/tags/java/"/>
-    
-      <category term="tags" scheme="http://yoursite.com/tags/tags/"/>
-    
-      <category term="test" scheme="http://yoursite.com/tags/test/"/>
     
   </entry>
   
